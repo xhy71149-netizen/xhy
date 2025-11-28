@@ -20,70 +20,56 @@ View your app in AI Studio: https://ai.studio/apps/drive/1zqjFKKYI2cWvrWp6QaTILl
    `npm run dev`
 
 ##  操作指南
-这份指南整合了构建基于 **Google Gemini API** 的 **React + TypeScript** 视频/图像分析单页应用（SPA）的完整流程。
+这份指南将您提供的前置需求、本地部署步骤、以及缺失的**核心代码逻辑**进行了完整的整合。这是一个可以直接落地执行的“保姆级”开发文档。
 
-此教程将指导你从零开始，搭建开发环境、配置 API、处理样式，并最终免费部署上线。
-
----
-
-### 🚀 项目概览
-*   **类型**：纯前端单页应用 (SPA)。
-*   **技术栈**：React, TypeScript, Vite, Tailwind CSS。
-*   **核心功能**：利用 Google Gemini 模型进行视频理解和图像分析。
-*   **必要条件**：必须拥有 Google API Key。
+我们将项目命名为 **Clip-Name-AI**，这是一个基于 React + Vite + Tailwind + Gemini 的纯前端智能分析应用。
 
 ---
 
-### 第一阶段：准备工作 (API Key)
+# Clip-Name-AI 开发与部署全指南
 
-此项目依赖 Google 的 AI 模型，**必须**配置 API Key 才能运行。
+## 1. 项目准备 (Prerequisites)
 
-1.  **获取 Key**：
-    *   访问 [Google AI Studio](https://aistudio.google.com/)。
-    *   登录 Google 账号。
-    *   点击 **"Get API key"** 创建一个新的 Key。
-2.  **注意模型与费用**：
-    *   项目代码默认配置的模型（如描述中的 `gemini-3-pro` 或 `gemini-2.5-flash-lite`）可能处于预览阶段。
-    *   建议在 Google AI Studio 控制台关注计费情况（Gemini 1.5 Flash 目前通常有免费层级）。
+在开始之前，请确保您具备以下条件：
 
----
-
-### 第二阶段：项目初始化 (本地环境)
-
-确保电脑已安装 **Node.js** (推荐 v18+)。
-
-1.  **创建 Vite 项目**：
-    打开终端（Terminal/CMD），执行以下命令：
-    ```bash
-    # 创建项目 (选择 React 和 TypeScript)
-    npm create vite@latest clip-name-ai -- --template react-ts
-
-    # 进入目录
-    cd clip-name-ai
-
-    # 安装基础依赖
-    npm install
-    ```
-
-2.  **安装功能依赖**：
-    安装 Google GenAI SDK 和 Tailwind CSS：
-    ```bash
-    # 安装 Google AI SDK
-    npm install @google/genai
-
-    # 安装 Tailwind CSS 及其依赖
-    npm install -D tailwindcss postcss autoprefixer
-    
-    # 初始化 Tailwind 配置
-    npx tailwindcss init -p
-    ```
+*   **Node.js 环境**: v18 或更高版本。
+*   **API Key**: 必须拥有 Google Gemini 的 API 权限。
+    *   获取地址: [Google AI Studio](https://aistudio.google.com/)
+    *   **注意**: 本项目默认配置使用 `gemini-1.5-pro` (当前最强稳定版) 或您指定的 `gemini-3-pro-preview`（需确认您有该模型访问权限）。
 
 ---
 
-### 第三阶段：代码配置与迁移
+## 2. 本地开发搭建 (Local Setup)
 
-#### 1. 配置 Tailwind CSS
-修改根目录下的 `tailwind.config.js`：
+请按顺序在终端执行以下命令。
+
+### 第一步：创建项目并安装依赖
+
+这里我们将安装 `lucide-react` (图标库) 和 `react-markdown` (结果渲染) 以提升体验，并将 Google SDK 修正为目前通用的 `@google/generative-ai`。
+
+```bash
+# 1. 创建 Vite React+TS 项目
+npm create vite@latest clip-name-ai -- --template react-ts
+
+# 2. 进入目录
+cd clip-name-ai
+
+# 3. 安装核心依赖 (Google AI SDK, React Markdown)
+npm install @google/generative-ai react-markdown lucide-react
+
+# 4. 安装样式依赖 (Tailwind CSS)
+npm install -D tailwindcss postcss autoprefixer
+```
+
+### 第二步：初始化 Tailwind CSS
+
+```bash
+# 初始化配置
+npx tailwindcss init -p
+```
+
+修改根目录下的 `tailwind.config.js`，将 `content` 数组替换为：
+
 ```javascript
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -98,94 +84,270 @@ export default {
 }
 ```
 
-修改 `src/index.css`，清空原内容并填入：
+修改 `src/index.css`，清空原内容并添加：
+
 ```css
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 ```
 
-#### 2. 迁移源代码
-请按照以下结构组织文件（将你生成的代码填入对应文件）：
+### 第三步：配置环境变量
 
-*   **根目录/src/**
-    *   `App.tsx` (覆盖原文件，主应用逻辑)
-    *   `main.tsx` (入口文件)
-    *   `types.ts` (类型定义)
-    *   `constants.ts` (常量定义，如 Prompt 提示词)
-*   **根目录/src/components/** (新建文件夹)
-    *   `Header.tsx`
-    *   `UploadArea.tsx`
-    *   `ResultsView.tsx`
-*   **根目录/src/services/** (新建文件夹)
-    *   `api.ts` (负责调用 Google API)
-    *   `fileUtils.ts` (文件处理工具)
+在项目根目录创建 `.env` 文件：
+
+```env
+# 请将下方字符串替换为您的真实 API Key
+VITE_API_KEY=AIzaSyDxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+```
+
+> **安全提示**: 在纯前端项目中，API Key 会暴露在浏览器网络请求中。如果是个人本地使用或部署在带密码保护的环境，可以接受；如果是面向公网的商业服务，强烈建议后续增加后端服务转发请求。
 
 ---
 
-### 第四阶段：关键配置 (API Key 集成)
+## 3. 核心代码实现 (Source Code)
 
-由于使用 Vite 构建，环境变量的处理方式与传统 Node.js 不同。
+请将以下代码分别复制到对应的文件中。
 
-1.  **创建环境变量文件**：
-    在项目**根目录**（与 `package.json` 同级）新建一个名为 `.env` 的文件，内容如下：
-    ```env
-    VITE_API_KEY=AIzaSyDxxxxxxxxxxxxxxxxxxxxxxxx
-    ```
-    *(将 `AIza...` 替换为你第一步申请的真实 Key)*
+### 3.1 API 服务层 (`src/services/api.ts`)
 
-2.  **修改代码中的调用方式**：
-    打开 `src/services/api.ts`，找到初始化 `GoogleGenAI` 的地方，修改如下：
-    ```typescript
-    // ❌ 错误写法 (Node.js 方式)
-    // const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+创建该文件用于处理文件转换和与 Gemini 的通信。
 
-    // ✅ 正确写法 (Vite 方式)
-    const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY });
-    ```
+```typescript
+// src/services/api.ts
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+const API_KEY = import.meta.env.VITE_API_KEY;
+
+if (!API_KEY) {
+  throw new Error("Missing VITE_API_KEY in .env file");
+}
+
+const genAI = new GoogleGenerativeAI(API_KEY);
+
+// 配置使用的模型，如果您的账号支持 gemini-3-pro-preview，请在此修改
+const MODEL_NAME = "gemini-1.5-pro"; 
+
+export async function generateContent(file: File, promptText: string) {
+  try {
+    const model = genAI.getGenerativeModel({ model: MODEL_NAME });
+
+    // 将文件转换为 Base64
+    const base64Data = await fileToGenerativePart(file);
+
+    // 发送请求
+    const result = await model.generateContent([
+      promptText || "Describe this video/image in detail.", // 默认提示词
+      base64Data
+    ]);
+
+    const response = await result.response;
+    return response.text();
+  } catch (error) {
+    console.error("Gemini API Error:", error);
+    throw error;
+  }
+}
+
+// 辅助函数：将 File 对象转为 Gemini SDK 需要的格式
+async function fileToGenerativePart(file: File) {
+  return new Promise<{ inlineData: { data: string; mimeType: string } }>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result as string;
+      // 移除 "data:image/jpeg;base64," 这样的前缀
+      const base64Data = base64String.split(',')[1];
+      
+      resolve({
+        inlineData: {
+          data: base64Data,
+          mimeType: file.type
+        },
+      });
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+```
+
+### 3.2 主界面逻辑 (`src/App.tsx`)
+
+这是一个现代化的、响应式的上传和分析界面。
+
+```tsx
+// src/App.tsx
+import { useState } from 'react';
+import { generateContent } from './services/api';
+import ReactMarkdown from 'react-markdown';
+import { Upload, Loader2, Image as ImageIcon, Video } from 'lucide-react';
+
+function App() {
+  const [file, setFile] = useState<File | null>(null);
+  const [prompt, setPrompt] = useState('');
+  const [result, setResult] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [preview, setPreview] = useState<string | null>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const selectedFile = e.target.files[0];
+      setFile(selectedFile);
+      // 创建本地预览 URL
+      setPreview(URL.createObjectURL(selectedFile));
+      setResult('');
+    }
+  };
+
+  const handleAnalyze = async () => {
+    if (!file) return;
+
+    setLoading(true);
+    setResult('');
+    try {
+      const aiResponse = await generateContent(file, prompt);
+      setResult(aiResponse);
+    } catch (error) {
+      setResult('Error: Failed to analyze content. Check console for details.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 text-gray-900 p-4 md:p-8">
+      <div className="max-w-3xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="text-center space-y-2">
+          <h1 className="text-4xl font-bold text-blue-600 tracking-tight">Clip Name AI</h1>
+          <p className="text-gray-500">Gemini 驱动的视频与图像智能理解助手</p>
+        </div>
+
+        {/* Upload Area */}
+        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+          <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition-colors relative">
+            <input 
+              type="file" 
+              accept="image/*,video/*" 
+              onChange={handleFileChange}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            />
+            {preview ? (
+              <div className="text-center space-y-2">
+                {file?.type.startsWith('video') ? (
+                  <video src={preview} className="max-h-64 rounded shadow" controls />
+                ) : (
+                  <img src={preview} alt="Preview" className="max-h-64 rounded shadow" />
+                )}
+                <p className="text-sm text-gray-500">{file?.name}</p>
+                <button 
+                  className="text-xs text-blue-600 hover:underline z-10 relative"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setFile(null);
+                    setPreview(null);
+                  }}
+                >
+                  更换文件
+                </button>
+              </div>
+            ) : (
+              <>
+                <Upload className="w-12 h-12 text-gray-400 mb-2" />
+                <p className="font-medium text-gray-700">点击上传 视频 或 图片</p>
+                <p className="text-xs text-gray-400 mt-1">支持 MP4, JPG, PNG 等格式</p>
+              </>
+            )}
+          </div>
+
+          {/* Prompt Input */}
+          <div className="mt-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              分析指令 (Prompt)
+            </label>
+            <textarea 
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              rows={3}
+              placeholder="例如：请详细描述这个视频里发生了什么？或者给这张图起一个合适的文件名。"
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+            />
+          </div>
+
+          {/* Action Button */}
+          <button
+            onClick={handleAnalyze}
+            disabled={!file || loading}
+            className={`w-full mt-4 py-3 rounded-lg flex items-center justify-center font-semibold text-white transition-all
+              ${!file || loading 
+                ? 'bg-gray-400 cursor-not-allowed' 
+                : 'bg-blue-600 hover:bg-blue-700 shadow-md hover:shadow-lg'}`}
+          >
+            {loading ? (
+              <>
+                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                正在分析中...
+              </>
+            ) : (
+              <>
+                {file?.type.startsWith('video') ? <Video className="w-5 h-5 mr-2"/> : <ImageIcon className="w-5 h-5 mr-2"/>}
+                开始分析
+              </>
+            )}
+          </button>
+        </div>
+
+        {/* Result Area */}
+        {result && (
+          <div className="bg-white p-6 rounded-xl shadow-lg border border-blue-100">
+            <h2 className="text-lg font-bold mb-4 flex items-center text-gray-800">
+              <span className="w-1 h-6 bg-blue-600 rounded mr-2"></span>
+              分析结果
+            </h2>
+            <div className="prose prose-blue max-w-none text-gray-700 bg-gray-50 p-4 rounded-lg">
+              <ReactMarkdown>{result}</ReactMarkdown>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default App;
+```
 
 ---
 
-### 第五阶段：运行与测试
+## 4. 运行与测试
 
-1.  **启动本地服务器**：
-    ```bash
-    npm run dev
-    ```
-2.  **访问**：
-    浏览器打开终端显示的地址（通常是 `http://localhost:5173`）。
-3.  **测试**：
-    上传一个视频或图片，查看 AI 是否能正常返回分析结果。
+完成上述文件替换后，在终端运行：
 
----
+```bash
+npm run dev
+```
 
-### 第六阶段：上线部署 (免费托管)
+打开浏览器访问 `http://localhost:5173`。
 
-因为这是纯静态网站，无需购买服务器，推荐使用 **Vercel** 进行托管。
-
-1.  **推送到 GitHub**：
-    将你的项目代码提交并推送到 GitHub 仓库。
-2.  **在 Vercel 导入**：
-    *   登录 Vercel，点击 "Add New Project"。
-    *   选择 import 刚才的 GitHub 仓库。
-3.  **配置环境变量 (重要)**：
-    *   在 Vercel 的部署页面，找到 **"Environment Variables"** 选项。
-    *   **Key**: `VITE_API_KEY`
-    *   **Value**: `AIzaSyD...` (你的真实 Key)
-4.  **点击 Deploy**：
-    等待约 1 分钟，你的应用就会生成一个公网可访问的 URL（例如 `https://clip-name-ai.vercel.app`）。
+1.  上传一张图片或一个短视频。
+2.  输入提示词（例如：“帮我给这个视频起一个利于SEO的文件名”）。
+3.  点击“开始分析”，等待 Gemini 返回结果。
 
 ---
 
-### ⚠️ 安全性重要提示
+## 5. 生产环境部署 (Deploy)
 
-**架构风险**：
-目前的实现是 **Client-side (客户端)** 直接调用 Google API。这意味着你的 API Key 会包含在浏览器的网络请求中，精通技术的用户可以在控制台看到你的 Key。
+由于本项目构建后是纯静态文件 (HTML/JS/CSS)，您可以零成本部署。
 
-**建议**：
-1.  **个人/演示用途**：
-    *   可以直接使用。
-    *   强烈建议在 **Google AI Studio** 的 API Key 设置中，添加 **HTTP Referrer 限制**。将其限制为仅允许你的 Vercel 域名（如 `https://your-app.vercel.app/*`）和本地地址（`http://localhost:5173/*`）调用。
-2.  **商业/公开产品**：
-    *   这种架构**不安全**。
-    *   你需要搭建一个后端服务（Node.js/Python/Go），将 Key 保存在后端服务器。前端请求你的后端，后端再代理请求 Google。
+### 部署到 Vercel (推荐)
+
+1.  **代码推送**: 将您的代码提交到 GitHub/GitLab。
+    *   *注意：不要将 `.env` 文件提交到代码仓库中（`.gitignore` 默认已包含）。*
+2.  **导入项目**: 登录 [Vercel](https://vercel.com/)，点击 "Add New Project"，导入您的 Git 仓库。
+3.  **配置环境变量**:
+    *   在 Vercel 部署页面的 **Environment Variables** 区域。
+    *   Key: `VITE_API_KEY`
+    *   Value: `AIzaSyD...` (您的真实 API Key)
+4.  **部署**: 点击 **Deploy**。等待约 1 分钟，您将获得一个公网可访问的 HTTPS 链接。
+
+现在，您的 Clip-Name-AI 智能工具已经上线了！
