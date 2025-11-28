@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ClipResult, FileWithPreview } from '../types';
 
 interface ResultsViewProps {
@@ -8,29 +8,31 @@ interface ResultsViewProps {
 
 export const ResultsView: React.FC<ResultsViewProps> = ({ results, clips }) => {
   
-  // Helper to find the matching preview for a result
-  const getPreview = (originalName: string) => {
-    const match = clips.find(c => c.file.name === originalName);
-    return match ? match.previewUrl : null;
-  };
+  // Enforce ordering: Map results to the order of original clips
+  const sortedResults = useMemo(() => {
+    return clips.map(clip => {
+      const result = results.find(r => r.originalName === clip.file.name);
+      return result ? { ...result, previewUrl: clip.previewUrl } : null;
+    }).filter((r): r is ClipResult & { previewUrl: string } => r !== null);
+  }, [results, clips]);
 
   const copyNameList = () => {
-    const list = results.map(r => r.suggestedName).join('\n');
+    const list = sortedResults.map(r => r.suggestedName).join('\n');
     navigator.clipboard.writeText(list);
     alert('文件名列表已复制到剪贴板！');
   };
 
   const downloadScript = (type: 'bat' | 'sh') => {
-    if (results.length === 0) return;
+    if (sortedResults.length === 0) return;
 
     let content = '';
     if (type === 'bat') {
       content = '@echo off\r\nchcp 65001\r\n'; // Use UTF-8 for Chinese characters
-      content += results.map(r => `ren "${r.originalName}" "${r.suggestedName}"`).join('\r\n');
+      content += sortedResults.map(r => `ren "${r.originalName}" "${r.suggestedName}"`).join('\r\n');
       content += '\r\npause';
     } else {
       content = '#!/bin/bash\n';
-      content += results.map(r => `mv "${r.originalName}" "${r.suggestedName}"`).join('\n');
+      content += sortedResults.map(r => `mv "${r.originalName}" "${r.suggestedName}"`).join('\n');
     }
 
     const blob = new Blob([content], { type: 'text/plain' });
@@ -51,10 +53,10 @@ export const ResultsView: React.FC<ResultsViewProps> = ({ results, clips }) => {
         <div>
           <h2 className="text-xl font-semibold text-white flex items-center gap-2">
             <span className="material-icons-round text-indigo-400">auto_awesome</span>
-            分析结果 ({results.length})
+            分析结果 ({sortedResults.length})
           </h2>
           <p className="text-sm text-slate-400 mt-1">
-            已生成详细的中文命名 (15字以内)
+            已生成详细的中文命名 (包含主语+动作，15字以内)
           </p>
         </div>
         
@@ -62,10 +64,10 @@ export const ResultsView: React.FC<ResultsViewProps> = ({ results, clips }) => {
           <button 
             onClick={copyNameList}
             className="flex items-center gap-2 px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm transition-colors"
-            title="复制所有新文件名"
+            title="按视频顺序复制所有新文件名"
           >
             <span className="material-icons-round text-sm">content_copy</span>
-            复制列表
+            复制列表 (顺序)
           </button>
           
           <div className="h-8 w-px bg-slate-600 hidden md:block mx-1"></div>
@@ -91,22 +93,19 @@ export const ResultsView: React.FC<ResultsViewProps> = ({ results, clips }) => {
 
       {/* Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {results.map((result, idx) => {
-          const previewUrl = getPreview(result.originalName);
+        {sortedResults.map((result, idx) => {
           return (
             <div key={idx} className="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden hover:border-slate-600 transition-colors shadow-lg flex flex-col">
-              {previewUrl && (
-                <div className="aspect-video w-full bg-slate-900 relative overflow-hidden group">
-                  <img 
-                    src={previewUrl} 
-                    alt={result.originalName} 
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm text-xs text-white px-2 py-1 rounded max-w-[80%] truncate">
-                    {result.originalName}
-                  </div>
+              <div className="aspect-video w-full bg-slate-900 relative overflow-hidden group">
+                <img 
+                  src={result.previewUrl} 
+                  alt={result.originalName} 
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm text-xs text-white px-2 py-1 rounded max-w-[80%] truncate">
+                  {result.originalName}
                 </div>
-              )}
+              </div>
               
               <div className="p-4 space-y-3 flex-1 flex flex-col">
                 <div>
@@ -118,7 +117,6 @@ export const ResultsView: React.FC<ResultsViewProps> = ({ results, clips }) => {
                     <button 
                         onClick={() => {
                           navigator.clipboard.writeText(result.suggestedName);
-                          // Optional: visual feedback
                         }}
                         className="text-slate-500 hover:text-white transition-colors p-1"
                         title="复制此文件名"
@@ -129,7 +127,7 @@ export const ResultsView: React.FC<ResultsViewProps> = ({ results, clips }) => {
                 </div>
                 
                 <div className="flex-1">
-                  <label className="text-xs uppercase tracking-wider text-slate-500 font-semibold">场景分析</label>
+                  <label className="text-xs uppercase tracking-wider text-slate-500 font-semibold">场景详情</label>
                   <p className="text-slate-300 text-sm mt-1 leading-relaxed">
                     {result.reasoning}
                   </p>

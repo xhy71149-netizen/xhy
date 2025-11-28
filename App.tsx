@@ -17,19 +17,16 @@ export default function App() {
   useEffect(() => {
     return () => {
       if (videoFile) revokePreview(videoFile.previewUrl);
-      // For clips, previewUrl is now a dataURL from canvas, so no explicit revoke needed if it's base64,
-      // but if we used createObjectURL for thumbnails in future, we'd need it. 
-      // Current implementation returns Data URL, so memory is managed by JS GC.
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleVideoSelect = (files: FileList) => {
     if (files[0]) {
-      // Limit file size for browser safety (e.g., 200MB for main video?)
-      // Let's keep 100MB to be safe for base64 conversion in browser
-      if (files[0].size > 100 * 1024 * 1024) {
-        setError({ message: "主视频文件过大。演示环境请使用 100MB 以下的文件。" });
+      // Limit file size for browser safety (300MB as requested)
+      // Note: Large Base64 conversion can be memory intensive
+      if (files[0].size > 300 * 1024 * 1024) {
+        setError({ message: "主视频文件过大。请使用 300MB 以下的文件。" });
         return;
       }
       
@@ -49,7 +46,6 @@ export default function App() {
     try {
       const newClipsPromises = Array.from(files).map(async (file) => {
         // Generate thumbnail for each clip
-        // Note: This might be slow for many large files in browser
         const thumbnailDataUrl = await generateVideoThumbnail(file);
         return {
           file,
@@ -70,7 +66,6 @@ export default function App() {
   const removeClip = (index: number) => {
     setClipFiles(prev => {
       const newClips = [...prev];
-      // If we used object URLs for thumbnails, we would revoke here.
       newClips.splice(index, 1);
       return newClips;
     });
@@ -87,8 +82,6 @@ export default function App() {
       const videoBase64 = await fileToBase64(videoFile.file);
       
       // 2. Prepare thumbnails for API
-      // The previewUrl in clipFiles is already a Data URL (base64 with prefix)
-      // We need to strip the prefix for the API
       const imagesPayload = clipFiles.map(clip => ({
         base64: clip.previewUrl.split(',')[1],
         mimeType: 'image/jpeg', // generateVideoThumbnail returns jpeg
@@ -170,7 +163,7 @@ export default function App() {
               {!videoFile ? (
                 <UploadArea 
                   label="上传完整视频" 
-                  subLabel="MP4, WebM (最大 100MB)" 
+                  subLabel="MP4, WebM (最大 300MB)" 
                   accept="video/*" 
                   icon="video_file" 
                   onFileSelect={handleVideoSelect}
