@@ -20,119 +20,172 @@ View your app in AI Studio: https://ai.studio/apps/drive/1zqjFKKYI2cWvrWp6QaTILl
    `npm run dev`
 
 ##  操作指南
-这是一个为您优化过的 `README.md` 版本。它提取了部署手册中的核心信息，并按照 GitHub 开源项目的标准格式进行了重组，格式清晰，包含必要的徽章和代码块，您可以直接复制粘贴到项目的 `README.md` 文件中。
+这份指南整合了构建基于 **Google Gemini API** 的 **React + TypeScript** 视频/图像分析单页应用（SPA）的完整流程。
 
-***
-
-```markdown
-# Clip Name AI - 智能视频理解与重命名工具
-
-![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
-![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
-![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
-![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
-![Gemini API](https://img.shields.io/badge/Google%20Gemini-8E75B2?style=for-the-badge&logo=google&logoColor=white)
-
-这是一个基于 **React + TypeScript + Vite** 开发的单页应用（SPA）。项目利用 **Google Gemini API** 的强大视觉理解能力，实现视频内容的自动分析与智能重命名建议。
-
-> ⚠️ **注意**：本项目核心功能依赖 Google Gemini API，使用前必须配置 API Key。
-
-## ✨ 核心功能
-
-*   **视频/图像分析**：利用 Google 最新的多模态模型（如 `gemini-2.5-flash-lite` 或 `gemini-3-pro` 预览版）深入理解视频内容。
-*   **极速构建**：基于 Vite 构建，开发体验流畅。
-*   **现代化 UI**：使用 TailwindCSS 构建的响应式界面。
-*   **纯前端架构**：无需后端服务器，直接通过浏览器调用 API。
-
-## 🛠️ 技术栈
-
-*   **前端框架**: React 18
-*   **语言**: TypeScript
-*   **构建工具**: Vite
-*   **样式库**: TailwindCSS
-*   **AI SDK**: Google GenAI SDK (`@google/genai`)
-
-## 🚀 快速开始 (本地运行)
-
-### 1. 环境准备
-确保您的本地环境已安装 Node.js (推荐 v18 或更高版本)。
-```bash
-node -v
-```
-
-### 2. 获取 Google API Key
-由于项目依赖 Google Gemini 模型，您需要先申请 API Key：
-1.  访问 [Google AI Studio](https://aistudio.google.com/)。
-2.  登录 Google 账号并点击 **Get API key**。
-3.  复制生成的 API Key。
-    *   *注意：请关注 `gemini-3-pro` 等预览版模型的计费情况。*
-
-### 3. 安装依赖
-下载代码后，在项目根目录运行以下命令安装依赖：
-
-```bash
-npm install
-```
-
-### 4. 配置环境变量 (关键步骤)
-在项目根目录创建一个 `.env` 文件，并添加您的 API Key：
-
-```properties
-# .env 文件
-VITE_API_KEY=AIzaSyDxxxxxxxxxxxxxxxxxxxxxxxx
-```
-*注意：变量名必须以 `VITE_` 开头，否则 Vite 无法识别。*
-
-### 5. 启动项目
-运行本地开发服务器：
-
-```bash
-npm run dev
-```
-启动成功后，访问终端显示的地址（通常为 `http://localhost:5173`）即可使用。
-
-## 📦 上线部署
-
-本项目为纯静态网站，推荐使用 Vercel 或 Netlify 进行免费托管。
-
-### 方案 A：部署到 Vercel (推荐)
-1.  将代码推送到您的 **GitHub** 仓库。
-2.  登录 [Vercel](https://vercel.com/) 并点击 **New Project**。
-3.  导入您的 GitHub 仓库。
-4.  **配置环境变量**：
-    *   在 **Environment Variables** 区域点击 Add。
-    *   Key: `VITE_API_KEY`
-    *   Value: `您的实际 API Key`
-5.  点击 **Deploy**，等待构建完成即可获得公网访问地址。
-
-### 方案 B：部署到 Netlify
-1.  登录 [Netlify](https://www.netlify.com/) 并选择 **Import from Git**。
-2.  选择 GitHub 仓库。
-3.  在 **Site settings** -> **Environment variables** 中添加 `VITE_API_KEY`。
-4.  点击 **Deploy site**。
-
-## 🔒 安全性提示
-
-当前架构采用 **客户端直接调用 API** 的方式（Client-side API Calls）。
-
-*   **个人/演示用途**：
-    可直接使用。建议在 [Google AI Studio 控制台](https://aistudio.google.com/) 设置 API Key 的 **Referrer 限制**（仅允许您的 Vercel/Netlify 域名调用），以防止 Key 被盗用。
-*   **商业/生产环境**：
-    **不建议**直接使用当前架构。建议搭建轻量级后端（Node.js/Python），将 API Key 存储在服务器端，前端通过后端转发请求，以确保密钥安全。
-
-## 📄 目录结构说明
-
-```text
-src/
-├── components/       # UI 组件 (Header, UploadArea, ResultsView)
-├── services/         # 业务逻辑
-│   ├── api.ts        # Google GenAI SDK 调用封装
-│   └── fileUtils.ts  # 文件处理工具
-├── App.tsx           # 主应用入口
-├── main.tsx          # 渲染入口
-└── index.css         # Tailwind 样式入口
-```
+此教程将指导你从零开始，搭建开发环境、配置 API、处理样式，并最终免费部署上线。
 
 ---
 
+### 🚀 项目概览
+*   **类型**：纯前端单页应用 (SPA)。
+*   **技术栈**：React, TypeScript, Vite, Tailwind CSS。
+*   **核心功能**：利用 Google Gemini 模型进行视频理解和图像分析。
+*   **必要条件**：必须拥有 Google API Key。
+
+---
+
+### 第一阶段：准备工作 (API Key)
+
+此项目依赖 Google 的 AI 模型，**必须**配置 API Key 才能运行。
+
+1.  **获取 Key**：
+    *   访问 [Google AI Studio](https://aistudio.google.com/)。
+    *   登录 Google 账号。
+    *   点击 **"Get API key"** 创建一个新的 Key。
+2.  **注意模型与费用**：
+    *   项目代码默认配置的模型（如描述中的 `gemini-3-pro` 或 `gemini-2.5-flash-lite`）可能处于预览阶段。
+    *   建议在 Google AI Studio 控制台关注计费情况（Gemini 1.5 Flash 目前通常有免费层级）。
+
+---
+
+### 第二阶段：项目初始化 (本地环境)
+
+确保电脑已安装 **Node.js** (推荐 v18+)。
+
+1.  **创建 Vite 项目**：
+    打开终端（Terminal/CMD），执行以下命令：
+    ```bash
+    # 创建项目 (选择 React 和 TypeScript)
+    npm create vite@latest clip-name-ai -- --template react-ts
+
+    # 进入目录
+    cd clip-name-ai
+
+    # 安装基础依赖
+    npm install
+    ```
+
+2.  **安装功能依赖**：
+    安装 Google GenAI SDK 和 Tailwind CSS：
+    ```bash
+    # 安装 Google AI SDK
+    npm install @google/genai
+
+    # 安装 Tailwind CSS 及其依赖
+    npm install -D tailwindcss postcss autoprefixer
+    
+    # 初始化 Tailwind 配置
+    npx tailwindcss init -p
+    ```
+
+---
+
+### 第三阶段：代码配置与迁移
+
+#### 1. 配置 Tailwind CSS
+修改根目录下的 `tailwind.config.js`：
+```javascript
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}
 ```
+
+修改 `src/index.css`，清空原内容并填入：
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+
+#### 2. 迁移源代码
+请按照以下结构组织文件（将你生成的代码填入对应文件）：
+
+*   **根目录/src/**
+    *   `App.tsx` (覆盖原文件，主应用逻辑)
+    *   `main.tsx` (入口文件)
+    *   `types.ts` (类型定义)
+    *   `constants.ts` (常量定义，如 Prompt 提示词)
+*   **根目录/src/components/** (新建文件夹)
+    *   `Header.tsx`
+    *   `UploadArea.tsx`
+    *   `ResultsView.tsx`
+*   **根目录/src/services/** (新建文件夹)
+    *   `api.ts` (负责调用 Google API)
+    *   `fileUtils.ts` (文件处理工具)
+
+---
+
+### 第四阶段：关键配置 (API Key 集成)
+
+由于使用 Vite 构建，环境变量的处理方式与传统 Node.js 不同。
+
+1.  **创建环境变量文件**：
+    在项目**根目录**（与 `package.json` 同级）新建一个名为 `.env` 的文件，内容如下：
+    ```env
+    VITE_API_KEY=AIzaSyDxxxxxxxxxxxxxxxxxxxxxxxx
+    ```
+    *(将 `AIza...` 替换为你第一步申请的真实 Key)*
+
+2.  **修改代码中的调用方式**：
+    打开 `src/services/api.ts`，找到初始化 `GoogleGenAI` 的地方，修改如下：
+    ```typescript
+    // ❌ 错误写法 (Node.js 方式)
+    // const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+
+    // ✅ 正确写法 (Vite 方式)
+    const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY });
+    ```
+
+---
+
+### 第五阶段：运行与测试
+
+1.  **启动本地服务器**：
+    ```bash
+    npm run dev
+    ```
+2.  **访问**：
+    浏览器打开终端显示的地址（通常是 `http://localhost:5173`）。
+3.  **测试**：
+    上传一个视频或图片，查看 AI 是否能正常返回分析结果。
+
+---
+
+### 第六阶段：上线部署 (免费托管)
+
+因为这是纯静态网站，无需购买服务器，推荐使用 **Vercel** 进行托管。
+
+1.  **推送到 GitHub**：
+    将你的项目代码提交并推送到 GitHub 仓库。
+2.  **在 Vercel 导入**：
+    *   登录 Vercel，点击 "Add New Project"。
+    *   选择 import 刚才的 GitHub 仓库。
+3.  **配置环境变量 (重要)**：
+    *   在 Vercel 的部署页面，找到 **"Environment Variables"** 选项。
+    *   **Key**: `VITE_API_KEY`
+    *   **Value**: `AIzaSyD...` (你的真实 Key)
+4.  **点击 Deploy**：
+    等待约 1 分钟，你的应用就会生成一个公网可访问的 URL（例如 `https://clip-name-ai.vercel.app`）。
+
+---
+
+### ⚠️ 安全性重要提示
+
+**架构风险**：
+目前的实现是 **Client-side (客户端)** 直接调用 Google API。这意味着你的 API Key 会包含在浏览器的网络请求中，精通技术的用户可以在控制台看到你的 Key。
+
+**建议**：
+1.  **个人/演示用途**：
+    *   可以直接使用。
+    *   强烈建议在 **Google AI Studio** 的 API Key 设置中，添加 **HTTP Referrer 限制**。将其限制为仅允许你的 Vercel 域名（如 `https://your-app.vercel.app/*`）和本地地址（`http://localhost:5173/*`）调用。
+2.  **商业/公开产品**：
+    *   这种架构**不安全**。
+    *   你需要搭建一个后端服务（Node.js/Python/Go），将 Key 保存在后端服务器。前端请求你的后端，后端再代理请求 Google。
