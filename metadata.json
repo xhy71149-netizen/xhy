@@ -1,0 +1,5 @@
+{
+  "name": "ClipName AI",
+  "description": "智能视频切片命名助手，使用 Gemini 3 Pro 进行多模态分析和视频理解。",
+  "requestFramePermissions": []
+}
